@@ -303,7 +303,7 @@ func (c *Client) parseRequest(r *request, opts ...RequestOption) (err error) {
 	}
 	if r.secType == secTypeSigned {
 		raw := fmt.Sprintf("%s%s", queryString, bodyString)
-		sign, err := sf(c.SecretKey, raw)
+		sign, err := sf(c.APIKey, c.SecretKey, raw)
 		if err != nil {
 			return err
 		}

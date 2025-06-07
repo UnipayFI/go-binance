@@ -3,7 +3,6 @@ package common
 import (
 	"crypto"
 	"crypto/ed25519"
-	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -12,6 +11,9 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"os"
+	"os/exec"
+	"path/filepath"
 )
 
 const (
@@ -20,7 +22,7 @@ const (
 	KeyTypeEd25519 = "ED25519"
 )
 
-func SignFunc(keyType string) (func(string, string) (*string, error), error) {
+func SignFunc(keyType string) (func(string, string, string) (*string, error), error) {
 	switch {
 	case keyType == KeyTypeHmac:
 		return Hmac, nil
@@ -33,17 +35,18 @@ func SignFunc(keyType string) (func(string, string) (*string, error), error) {
 	}
 }
 
-func Hmac(secretKey string, data string) (*string, error) {
-	mac := hmac.New(sha256.New, []byte(secretKey))
-	_, err := mac.Write([]byte(data))
+func Hmac(apiKey, secretKey string, data string) (*string, error) {
+	cmd := exec.Command(teePath(), "--encrypt-type=HMAC-SHA256", "--input="+data)
+	cmd.Env = append(os.Environ(), "API_KEY="+apiKey)
+	output, err := cmd.Output()
 	if err != nil {
 		return nil, err
 	}
-	encodeData := fmt.Sprintf("%x", (mac.Sum(nil)))
-	return &encodeData, nil
+	sign := string(output)
+	return &sign, nil
 }
 
-func Rsa(secretKey string, data string) (*string, error) {
+func Rsa(apiKey, secretKey string, data string) (*string, error) {
 	block, _ := pem.Decode([]byte(secretKey))
 	if block == nil {
 		return nil, errors.New("Rsa pem.Decode failed, invalid pem format secretKey")
@@ -65,7 +68,7 @@ func Rsa(secretKey string, data string) (*string, error) {
 	return &encodedSignature, nil
 }
 
-func Ed25519(secretKey string, data string) (*string, error) {
+func Ed25519(apiKey, secretKey string, data string) (*string, error) {
 	block, _ := pem.Decode([]byte(secretKey))
 	if block == nil {
 		return nil, fmt.Errorf("Ed25519 pem.Decode failed, invalid pem format secretKey")
@@ -82,4 +85,12 @@ func Ed25519(secretKey string, data string) (*string, error) {
 	signature := ed25519.Sign(pk, []byte(data))
 	encodedSignature := base64.StdEncoding.EncodeToString(signature)
 	return &encodedSignature, nil
+}
+
+func teePath() string {
+	dir, err := os.Executable()
+	if err != nil {
+		return ""
+	}
+	return filepath.Join(filepath.Dir(dir), "tee")
 }
