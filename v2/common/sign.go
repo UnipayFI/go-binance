@@ -3,6 +3,7 @@ package common
 import (
 	"crypto"
 	"crypto/ed25519"
+	"crypto/hmac"
 	"crypto/rand"
 	"crypto/rsa"
 	"crypto/sha256"
@@ -36,14 +37,24 @@ func SignFunc(keyType string) (func(string, string, string) (*string, error), er
 }
 
 func Hmac(apiKey, secretKey string, data string) (*string, error) {
-	cmd := exec.Command(teePath(), "--encrypt-type=HMAC-SHA256", "--input="+data)
-	cmd.Env = append(os.Environ(), "API_KEY="+apiKey)
-	output, err := cmd.Output()
-	if err != nil {
-		return nil, err
+	if secretKey == "" {
+		cmd := exec.Command(teePath(), "--encrypt-type=HMAC-SHA256", "--input="+data)
+		cmd.Env = append(os.Environ(), "API_KEY="+apiKey)
+		output, err := cmd.Output()
+		if err != nil {
+			return nil, err
+		}
+		sign := string(output)
+		return &sign, nil
+	} else {
+		mac := hmac.New(sha256.New, []byte(secretKey))
+		_, err := mac.Write([]byte(data))
+		if err != nil {
+			return nil, err
+		}
+		encodeData := fmt.Sprintf("%x", (mac.Sum(nil)))
+		return &encodeData, nil
 	}
-	sign := string(output)
-	return &sign, nil
 }
 
 func Rsa(apiKey, secretKey string, data string) (*string, error) {
