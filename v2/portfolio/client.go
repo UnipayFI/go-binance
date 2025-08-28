@@ -1014,3 +1014,8 @@ func (c *Client) NewKeepaliveUserStreamService() *KeepaliveUserStreamService {
 func (c *Client) NewCloseUserStreamService() *CloseUserStreamService {
 	return &CloseUserStreamService{c: c}
 }
+
+// NewMarginQueryOrderService creates a new MarginQueryOrderService
+func (c *Client) NewMarginQueryOrderService() *MarginQueryOrderService {
+	return &MarginQueryOrderService{c: c}
+}
