@@ -1504,7 +1504,7 @@ func WsUserDataServeMultiple(configs []WsPrivateStreamConfig, handler WsUserData
 		}
 		handler(event)
 	}
-	return wsServe(cfg, wsHandler, errHandler)
+	return WsServeConn(cfg, wsHandler, errHandler)
 }
 
 // WsApiInitReadWriteConn create and serve connection

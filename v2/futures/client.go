@@ -542,6 +542,10 @@ func (c *Client) NewGetAccountV3Service() *GetAccountV3Service {
 	return &GetAccountV3Service{c: c}
 }
 
+func (c *Client) NewGetAccountV4Service() *GetAccountV4Service {
+	return &GetAccountV4Service{c: c}
+}
+
 // NewGetBalanceService init getting balance service
 func (c *Client) NewGetBalanceService() *GetBalanceService {
 	return &GetBalanceService{c: c}

@@ -155,6 +155,29 @@ func (s *GetAccountV3Service) Do(ctx context.Context, opts ...RequestOption) (re
 	return res, nil
 }
 
+type GetAccountV4Service struct {
+	c *Client
+}
+
+// Do send request
+func (s *GetAccountV4Service) Do(ctx context.Context, opts ...RequestOption) (res *AccountV4, err error) {
+	r := &request{
+		method:   http.MethodGet,
+		endpoint: "/fapi/v4/account",
+		secType:  secTypeSigned,
+	}
+	data, _, err := s.c.callAPI(ctx, r, opts...)
+	if err != nil {
+		return nil, err
+	}
+	res = new(AccountV4)
+	err = json.Unmarshal(data, res)
+	if err != nil {
+		return nil, err
+	}
+	return res, nil
+}
+
 // AccountV3 define account info
 type AccountV3 struct {
 	TotalInitialMargin          string               `json:"totalInitialMargin"`
@@ -170,6 +193,15 @@ type AccountV3 struct {
 	MaxWithdrawAmount           string               `json:"maxWithdrawAmount"`
 	Assets                      []*AccountAssetV3    `json:"assets"`
 	Positions                   []*AccountPositionV3 `json:"positions"`
+}
+
+type AccountV4 struct {
+	FeeTier     int   `json:"feeTier"`     // 手续费等级
+	CanTrade    bool  `json:"canTrade"`    // 是否可以交易
+	CanDeposit  bool  `json:"canDeposit"`  // 是否可以入金
+	CanWithdraw bool  `json:"canWithdraw"` // 是否可以出金
+	UpdateTime  int64 `json:"updateTime"`
+	AccountV3
 }
 
 // AccountAssetV3 define account asset
