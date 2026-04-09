@@ -49,7 +49,7 @@ func (c *Client) CreateAnnouncementParam(opts ...RequestOption) (WsAnnouncementP
 		Timestamp:  timestamp,
 		ApiKey:     c.APIKey,
 	}
-	signature, err := sf(c.SecretKey, fmt.Sprintf("random=%s&topic=%s&recvWindow=%d&timestamp=%d", param.Random, param.Topic, param.RecvWindow, param.Timestamp))
+	signature, err := sf(c.APIKey, c.SecretKey, fmt.Sprintf("random=%s&topic=%s&recvWindow=%d&timestamp=%d", param.Random, param.Topic, param.RecvWindow, param.Timestamp))
 	if err != nil {
 		return WsAnnouncementParam{}, err
 	}
